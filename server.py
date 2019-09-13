@@ -3,6 +3,7 @@ import sys
 import getopt
 
 import socket
+import threading
 
 from config import Config
 from log import Logger
@@ -14,18 +15,35 @@ class Server(object):
 
     def run(self):
         host, port = self.get_system_args()
-        socket_server = self.create_socket(host, int(port))
+        try:
+            socket_server = self.create_socket(host, int(port))
+        except Exception as err:
+            self.logger.error('[ERROR]port must be Integer.')
+            sys.exit(-1)
         print('server now running in: {}:{}'.format(host, port))
         self.logger.info('server now running in: {}:{}'.format(host, port))
 
         while True:
             new_socket, addr = socket_server.accept()
 
-            # 接收客户端请求的报文
-            request_data = self.get_request_data(new_socket)
-            self.logger.info('client {}:{} connect to server success'.format(addr[0], addr[1]))
-            new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\n<html><head><title>Hello</title><body>Hello</body></html>')
-            new_socket.close()
+            # 创建一个线程来处理该请求，主线程继续监听连接
+            new_thread = threading.Thread(target=self.handle_connection, args=(new_socket, addr))
+            new_thread.start()
+
+    def handle_connection(self, new_socket, addr):
+        """
+        处理已经连接的socket
+        :param new_socket: 已经连接的socket
+        :param addr: 客户端的地址，是一个元组：(clientHost, clientPort)
+        :return:
+        """
+        self.logger.info('[INFO]handling client: {}:{} now.'.format(addr[0], addr[1]))
+        # 接收客户端的请求数据
+        request_data = self.get_request_data(new_socket)
+        print(request_data)
+        new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\nHello')
+        new_socket.close()
+
 
     def get_request_data(self, new_socket):
         data = b''
@@ -42,7 +60,7 @@ class Server(object):
         """
         获取命令行参数，可以指定host和port：
         python server.py -h <host> -p <port>
-        @return: 返回一个元组：(host, port)
+        return: 返回一个元组：(host, port)
         """
         host = Config.DEFAULT_HOST
         port = Config.DEFAULT_PORT
@@ -71,7 +89,7 @@ class Server(object):
         # 端口释放
         socket_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         socket_server.bind((host, port))
-        socket_server.listen()
+        socket_server.listen(5)
 
         return socket_server
 
