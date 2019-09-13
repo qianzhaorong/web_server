@@ -18,7 +18,7 @@ class Server(object):
         try:
             socket_server = self.create_socket(host, int(port))
         except Exception as err:
-            self.logger.error('[ERROR]port must be Integer.')
+            self.logger.error('[ERROR]port must be Integer: {}'.format(err))
             sys.exit(-1)
         print('server now running in: {}:{}'.format(host, port))
         self.logger.info('server now running in: {}:{}'.format(host, port))
@@ -43,7 +43,6 @@ class Server(object):
         print(request_data)
         new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\nHello')
         new_socket.close()
-
 
     def get_request_data(self, new_socket):
         data = b''
