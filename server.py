@@ -37,9 +37,9 @@ class Server(object):
         :param addr: 客户端的地址，是一个元组：(clientHost, clientPort)
         :return:
         """
-        self.logger.info('[INFO]handling client: {}:{} now.'.format(addr[0], addr[1]))
         # 接收客户端的请求数据
         request_data = self.get_request_data(new_socket)
+        self.logger.info('[INFO]handling client: {}:{} now.'.format(addr[0], addr[1]))
         print(request_data)
         new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\nHello')
         new_socket.close()
