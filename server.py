@@ -43,7 +43,8 @@ class Server(object):
         self.logger.info('[INFO]handling client: {}:{} now.'.format(addr[0], addr[1]))
         print(request_data)
         # 将浏览器发送的HTTP数据封装成Request对象
-        self.request = Request(request_data)
+        self.request = Request(request_data.decode())
+        # 将request对象交给框架去处理，并从框架那里得到response对象
         new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\nHello')
         new_socket.close()
 
