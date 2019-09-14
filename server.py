@@ -7,6 +7,7 @@ import threading
 
 from config import Config
 from log import Logger
+from request import Request
 
 
 class Server(object):
@@ -41,6 +42,8 @@ class Server(object):
         request_data = self.get_request_data(new_socket)
         self.logger.info('[INFO]handling client: {}:{} now.'.format(addr[0], addr[1]))
         print(request_data)
+        # 将浏览器发送的HTTP数据封装成Request对象
+        self.request = Request(request_data)
         new_socket.sendall(b'HTTP/1.1 200 OK\r\n\r\nHello')
         new_socket.close()
 
